@@ -1,0 +1,42 @@
+.app-main {
+  margin: 0 auto;
+  width: 80%;
+}
+.main-row {
+  border: 1px solid red;
+  display: flex;
+  font-size: 14px;
+  word-break: break-all;
+}
+
+.row-cell {
+  border-right: 1px solid yellowgreen;
+  text-align: left;
+}
+.row-cell-size-sm {
+  min-width: 10%;
+  max-width: 10%;  
+}
+.row-cell-size-m {
+  min-width: 20%;
+  max-width: 20%;  
+}
+.row-cell-size-l {
+  min-width: 40%;
+  max-width: 40%;  
+}
+.row-cell:last-child {
+  border-right: 0px;
+}
+.main-user-edit {
+  border: 1px solid red;
+  display: flex;
+  flex-direction: column;
+}
+.main-user-edit > div {
+  width: 100%;
+  margin-bottom: 5px;
+}
+.text-field-class {
+  width: 20%;
+}
