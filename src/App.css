@@ -1,5 +1,5 @@
 .app-main {
-  margin: 0 auto;
+  margin: 20px auto;
   width: 80%;
 }
 .main-row {
@@ -10,8 +10,12 @@
 }
 
 .row-cell {
+  display: flex;
   border-right: 1px solid yellowgreen;
   text-align: left;
+  align-items: center;
+  box-sizing: border-box;
+  padding: 2px;
 }
 .row-cell-size-sm {
   min-width: 10%;
@@ -30,6 +34,7 @@
 }
 .main-user-edit {
   border: 1px solid red;
+  padding: 5px;
   display: flex;
   flex-direction: column;
 }
@@ -39,4 +44,10 @@
 }
 .text-field-class {
   width: 20%;
+}
+.header-cell {
+  align-items: center;
+  height: 30px;
+  background: lightGray;
+  justify-content: center;
 }

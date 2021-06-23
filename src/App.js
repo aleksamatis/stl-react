@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import React from 'react';
 import './App.css';
-import User from './user';
-import UserEdit from './userEdit';
+import User from './User';
+import UserEdit from './UserEdit';
 import ArrowDropUpIcon from '@material-ui/icons/ArrowDropUp';
+import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
+
 import {
   BrowserRouter as Router,
   Switch,
@@ -10,68 +12,111 @@ import {
   Link
 } from "react-router-dom";
 
-const users = [
-  {id: '1', name: 'Roman', phone: '	+4312312312', eMail: 'sasdfasdfasdfasdfasd@gmail.com', country: 'AM', age: '20'},
-  {id: '2', name: 'Ivan', phone: '+376222222222', eMail: 'sfasdfasdfa@gmail.list.com', country: 'BY', age: '30'},
-  {id: '3', name: 'Alexander', phone: '+97355555555', eMail: 'aaaaaaaaaa@gmail.list.eu', country: 'DK', age: '25'},
-  {id: '4', name: 'Masha', phone: '+1888888888', eMail: 's@gmail.list.ru', country: 'US', age: '20'},
-  {id: '5', name: 'Grisha', phone: '+3390909090',  eMail: 'ssdsds@gmail.ru', country: 'AU', age: '30'},
-  {id: '6', name: 'Pety', phone: '+377000000000', eMail: 'sjjjj@gmail.io', country: 'NL', age: '25'},
-]
+import {updateUser, deleteUser, getUsers} from './data'
 
-function App() {
-  const [state, setState] = useState({
-    users, 
-    sortDesc: true,
-  })
-  
-  function sortUsers(field) {
-    return () => {
-      const sorted = state.users.sort(function(a, b){
-        if(a[field] < b[field]) { return state.sortDesc ? -1 : 1; }
-        if(a[field] > b[field]) { return state.sortDesc ? 1 : -1; }
-        return 0;
-      })
-      setState({users: sorted, sortDesc: !state.sortDesc, sortField: field})
+class App extends React.Component {
+  constructor(props) {
+    super(props)
+
+    this.state = {
+      users: [], 
+      sortDesc: true,
     }
+
+    this.sortUsers = this.sortUsers.bind(this)
+    this.deleteUser = this.deleteUser.bind(this)
+    this.updateUser = this.updateUser.bind(this)
   }
-  function deleteUser(userId) {
-      const userIdx = state.users.findIndex( currentValue => currentValue.id === userId ); 
-      state.users.splice(userIdx, 1);
-      setState({users: state.users})
-  }
-  function updateUser(user) {
-    const userIdx = state.users.findIndex( currentValue => currentValue.id === user.id );
-    state.users[userIdx] = user
-    setState({
-      users: state.users
+
+  componentDidMount() {
+    return getUsers().then(result => {
+      this.setState({users: result})
     })
   }
-  return (
-    <div className="App">
-        <div className="app-main">
-          <Router>
-            <Switch>
-              <Route path="/:userId" render={routeProps => {
-                const user = state.users.find( currentValue => currentValue.id === routeProps.match.params.userId )
-                return <div><UserEdit user={user} updateUser={updateUser} /><Link to="/">Back</Link></div>
-              }}/>
-              <Route path="/">
-                <div className="main-row">
-                  <div className="row-cell row-cell-size-m" onClick={sortUsers('name')}>Name { state.sortField === 'name' ? <ArrowDropUpIcon /> : ''}</div>
-                  <div className="row-cell row-cell-size-m" onClick={sortUsers('phone')}>Phone { state.sortField === 'phone' ? <ArrowDropUpIcon /> : ''}</div>
-                  <div className="row-cell row-cell-size-m" onClick={sortUsers('eMail')}>email { state.sortField === 'eMail' ? <ArrowDropUpIcon /> : ''}</div>
-                  <div className="row-cell row-cell-size-m" onClick={sortUsers('country')}>country { state.sortField === 'country' ? <ArrowDropUpIcon /> : ''}</div>
-                  <div className="row-cell row-cell-size-sm" onClick={sortUsers('age')}>age { state.sortField === 'age' ? <ArrowDropUpIcon /> : ''}</div>
-                  <div className="row-cell row-cell-size-sm" />
-                </div>
-                {state.users.map((user) => <User  key={user.id} user={user} deleteUser={deleteUser}/>)}
-              </Route>
-            </Switch>
-          </Router>
-        </div>
-    </div>
-  );
+  
+  sortUsers(field) {
+    return () => {
+      const sorted = this.state.users.sort((a, b) => {
+        if(a[field] < b[field]) { return this.state.sortDesc ? -1 : 1; }
+        if(a[field] > b[field]) { return this.state.sortDesc ? 1 : -1; }
+        return 0;
+      })
+      this.setState({users: sorted, sortDesc: !this.state.sortDesc, sortField: field})
+    }
+  }
+  deleteUser(userId) {
+      return deleteUser(userId).then(result => {
+        this.setState({users: result})
+      })
+  }
+  updateUser(user) {
+    return updateUser(user).then(result => {
+      this.setState({users: result})
+    })
+  }
+
+  render() {
+    return (
+      <div className="App">
+          <div className="app-main">
+            <Router>
+              <Switch>
+                <Route path="/:userId" render={routeProps => {
+                  const user = this.state.users.find( currentValue => currentValue.id === routeProps.match.params.userId )
+                  if (user) {
+                    return (
+                      <div style={{display: 'flex'}}>
+                        <Link to="/">Back</Link>
+                        <UserEdit user={user} updateUser={this.updateUser} return={() => routeProps.history.push('/')}/>
+                      </div>)
+                  } else {
+                    return <div>User not found</div>
+                  }
+                  
+                }}/>
+                <Route path="/">
+                  {this.header()}
+                  {this.state.users.map((user) => <User  key={user.id} user={user} deleteUser={this.deleteUser}/>)}
+                </Route>
+              </Switch>
+            </Router>
+          </div>
+      </div>
+    )
+  }
+
+  header() {
+    return (
+      <div className="main-row">
+        {this.headerRow('row-cell-size-m', 'name')}
+        {this.headerRow('row-cell-size-m', 'phone')}
+        {this.headerRow('row-cell-size-m', 'eMail')}
+        {this.headerRow('row-cell-size-m', 'country')}
+        {this.headerRow('row-cell-size-sm', 'age')}
+        <div className="header-cell row-cell row-cell-size-sm" />
+      </div>
+    )
+  }
+
+  headerRow(size, field) {
+    if (this.state.sortField === field) {
+
+    }
+    return (
+      <div
+        className={'header-cell row-cell ' + size}
+        onClick={this.sortUsers(field)}
+      >
+        {field} {this.headerArrow(field)}
+      </div>
+    )
+  }
+
+  headerArrow(field) {
+    if (this.state.sortField === field) {
+      return this.state.sortDesc ? <ArrowDropUpIcon /> : <ArrowDropDownIcon />
+    }
+  }
 }
 
 
